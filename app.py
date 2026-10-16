@@ -15,104 +15,153 @@ from codesaathi.history import list_recent, save
 ROOT = Path(__file__).resolve().parent
 DB_PATH = Path(os.getenv("CODESAATHI_DB", str(ROOT / "codesaathi_history.db")))
 
-st.set_page_config(page_title="CodeSaathi AI · Python tutor", page_icon="🌱", layout="wide", initial_sidebar_state="expanded")
+st.set_page_config(page_title="CodeSaathi AI | Python learning studio", page_icon="🌱", layout="wide", initial_sidebar_state="expanded")
 st.markdown("""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap');
-:root { --ink:#18252b; --muted:#64747b; --green:#087e68; --soft:#e9f5f0; }
-html, body, [class*="css"] { font-family:'DM Sans',sans-serif; }
-h1,h2,h3 {font-family:'Space Grotesk',sans-serif; color:var(--ink);}
-.hero { background:linear-gradient(120deg,#e9f5f0,#f3f7e9); border:1px solid #d9e9e1; border-radius:22px; padding:28px 32px; margin-bottom:20px; }
-.eyebrow { color:#087e68; font-size:.75rem; letter-spacing:.12em; text-transform:uppercase; font-weight:700; }
-.hero h1 {font-size:2.1rem; margin:.25rem 0;}
-.hero p {color:#52656c; margin:0;}
-.card {border:1px solid #e2e9e6; background:white; border-radius:16px; padding:18px 20px; margin:.5rem 0;}
-.small {color:#64747b; font-size:.9rem;}
-div.stButton > button[kind="primary"] {background:#087e68;border-color:#087e68;}
-@media(max-width:700px){.hero{padding:20px}.hero h1{font-size:1.7rem}}
+:root {
+  --ink: #172b2b; --muted: #667b79; --green: #087e68; --green-dark: #066553;
+  --mint: #eaf5f0; --line: #dfe9e5; --canvas: #f7f9f8; --white: #ffffff;
+}
+html, body, [class*="css"] { font-family: Inter, "Segoe UI", sans-serif; color: var(--ink); }
+.stApp { background: var(--canvas); }
+h1, h2, h3 { color: var(--ink); letter-spacing: -.035em; }
+h1 { font-size: 2.15rem !important; font-weight: 700 !important; }
+h2 { font-size: 1.4rem !important; }
+h3 { font-size: 1.05rem !important; }
+[data-testid="stSidebar"] { background: #f0f5f2; border-right: 1px solid var(--line); }
+[data-testid="stSidebar"] [data-testid="stMarkdownContainer"] p { color: var(--muted); }
+.brand { display:flex; align-items:center; gap:11px; padding: 4px 0 18px; }
+.brand-mark { display:grid; place-items:center; width:40px; height:40px; border-radius:13px; background:var(--green); color:white; font-size:21px; }
+.brand-name { font-size:1.13rem; font-weight:750; color:var(--ink); line-height:1.1; }
+.brand-sub { color:var(--muted); font-size:.75rem; margin-top:4px; }
+.hero { background:linear-gradient(118deg,#e8f4ee 0%,#f2f6e9 100%); border:1px solid #dceae2; border-radius:20px; padding:25px 30px; margin:0 0 22px; }
+.eyebrow { color:var(--green); font-size:.72rem; letter-spacing:.13em; text-transform:uppercase; font-weight:750; }
+.hero h1 { margin:.28rem 0 .3rem; }
+.hero p { color:#536a66; font-size:.98rem; margin:0; }
+.surface { border:1px solid var(--line); background:var(--white); border-radius:16px; padding:18px 20px; }
+.surface-title { color:var(--ink); font-weight:700; font-size:1rem; margin-bottom:4px; }
+.muted { color:var(--muted); font-size:.88rem; line-height:1.55; }
+.metric { border:1px solid var(--line); border-radius:14px; background:#fff; padding:13px 15px; min-height:82px; }
+.metric-label { font-size:.75rem; color:var(--muted); text-transform:uppercase; letter-spacing:.08em; font-weight:700; }
+.metric-value { color:var(--ink); font-size:1.1rem; font-weight:700; margin-top:5px; }
+.safe-note { border-left:3px solid var(--green); background:#eff7f3; padding:11px 13px; border-radius:0 10px 10px 0; color:#41615a; font-size:.83rem; line-height:1.45; }
+div.stButton > button[kind="primary"] { background:var(--green); border-color:var(--green); border-radius:10px; font-weight:650; }
+div.stButton > button[kind="primary"]:hover { background:var(--green-dark); border-color:var(--green-dark); }
+div.stButton > button { border-radius:10px; }
+div[data-baseweb="input"] > div, div[data-baseweb="select"] > div { border-radius:9px; }
+[data-testid="stExpander"] { background:white; border:1px solid var(--line); border-radius:12px; }
+@media(max-width:700px) { .hero { padding:20px; } h1 { font-size:1.75rem !important; } }
 </style>
 """, unsafe_allow_html=True)
 
+
+def navigate_to_example(example_name: str) -> None:
+    st.session_state["editor_code"] = EXAMPLES[example_name]
+    st.session_state["sample_choice"] = example_name
+    st.session_state["nav_page"] = "Analyze code"
+
+
+def show_header(eyebrow: str, title: str, subtitle: str) -> None:
+    st.markdown(f'<section class="hero"><div class="eyebrow">{eyebrow}</div><h1>{title}</h1><p>{subtitle}</p></section>', unsafe_allow_html=True)
+
+
+def show_metric(label: str, value: str) -> None:
+    st.markdown(f'<div class="metric"><div class="metric-label">{label}</div><div class="metric-value">{value}</div></div>', unsafe_allow_html=True)
+
+
 with st.sidebar:
-    st.markdown("## 🌱 CodeSaathi AI")
-    page = st.radio("Navigate", ["Analyze code", "History", "Examples"], label_visibility="collapsed")
+    st.markdown('<div class="brand"><div class="brand-mark">✳</div><div><div class="brand-name">CodeSaathi AI</div><div class="brand-sub">Python learning studio</div></div></div>', unsafe_allow_html=True)
+    st.markdown("#### WORKSPACE")
+    page = st.radio("Workspace", ["Analyze code", "History", "Examples"], key="nav_page", label_visibility="collapsed")
     st.divider()
-    st.caption("A patient Python learning companion")
-    st.caption("🔒 Your code is parsed, never executed here.")
-
-
-def load_selected_example() -> None:
-    selected = st.session_state.get("sample_choice")
-    if selected in EXAMPLES:
-        st.session_state["editor_code"] = EXAMPLES[selected]
-
-
-def show_header(title: str, sub: str) -> None:
-    st.markdown(f'<section class="hero"><div class="eyebrow">Your friendly Python tutor</div><h1>{title}</h1><p>{sub}</p></section>', unsafe_allow_html=True)
+    st.markdown('<div class="safe-note"><strong>Safe by design</strong><br>Code is parsed and checked. It is never executed on this server.</div>', unsafe_allow_html=True)
+    st.caption("Made for learning Python, one fix at a time.")
 
 
 if page == "Analyze code":
-    show_header("Let’s debug together.", "Paste your Python, and we’ll make the next step easier to understand.")
-    left, right = st.columns([1.35, 1], gap="large")
-    with left:
+    show_header("PYTHON DEBUGGING · YOUR LEARNING SPACE", "Understand the error. Learn the fix.", "Paste a Python snippet to get a clear explanation, safe checks, and a practical next step.")
+    editor, results = st.columns([1.2, 1], gap="large")
+    with editor:
+        st.markdown("### Code editor")
+        st.caption("Paste code or start with a guided example.")
         st.session_state.setdefault("editor_code", "")
-        sample_name = st.selectbox("Start with an example", ["Choose an example…", *EXAMPLES.keys()], key="sample_choice", on_change=load_selected_example)
-        code = st.text_area("Your Python code", height=350, placeholder="# Paste a short Python program here\nprint('Hello, world!')", key="editor_code", help="Maximum 20,000 characters. Code is only parsed and statically checked; it is not run.")
-        submitted = st.button("Analyze my code →", type="primary", use_container_width=True)
+        sample_name = st.selectbox("Quick start", ["Choose an example…", *EXAMPLES.keys()], key="sample_choice", on_change=lambda: st.session_state.update(editor_code=EXAMPLES.get(st.session_state.get("sample_choice"), st.session_state.get("editor_code", ""))))
+        code = st.text_area("Python code", height=330, placeholder="# Start with a small program\nprint('Hello, world!')", key="editor_code", help="Up to 20,000 characters. Code is parsed and inspected, never run here.", label_visibility="collapsed")
+        st.caption(f"{len(code):,} / 20,000 characters")
+        submitted = st.button("Review my code  →", type="primary", use_container_width=True)
         if submitted:
             if not code.strip():
-                st.warning("Paste some Python code first, or choose an example above.")
+                st.warning("Add a few lines of Python or choose an example to begin.")
             else:
-                with st.spinner("Reading your code…"):  # analysis stays local and quick
+                with st.spinner("Reviewing your code…"):
                     analysis = analyze_code(code)
                     explanation = get_explanation(code, analysis)
                 result = {"analysis": analysis.to_dict(), "explanation": explanation}
-                save(DB_PATH, f"Analysis · {sample_name if sample_name != 'Choose an example…' else 'Python code'}", code, result)
+                title = sample_name if sample_name != "Choose an example…" else "Python code review"
+                save(DB_PATH, title, code, result)
                 st.session_state["latest_result"] = result
                 st.session_state["latest_code"] = code
-    with right:
-        st.markdown("### Your results")
+    with results:
+        st.markdown("### Review summary")
         result = st.session_state.get("latest_result")
         if not result:
-            st.markdown('<div class="card"><strong>Ready when you are</strong><p class="small">Your explanation, possible fix, and safe checks will appear here.</p></div>', unsafe_allow_html=True)
-            st.markdown("**What happens to your code?**\n\nWe check its Python syntax and look for a few common issues. The code is never executed on this server.")
+            st.markdown('<div class="surface"><div class="surface-title">Your review will appear here</div><div class="muted">We’ll explain the likely cause, show a correction when we can make one safely, and list a few checks.</div></div>', unsafe_allow_html=True)
+            st.markdown("")
+            st.markdown('<div class="safe-note">Your program is not run here. “Passed” means a static check passed; suggested test cases are not executed.</div>', unsafe_allow_html=True)
         else:
             details = result["analysis"]
             explanation = result["explanation"]
-            st.caption(f"Explanation mode: {explanation['mode']}")
+            syntax_check = next((check for check in details["test_results"] if check["name"] == "Python syntax"), None)
+            status = syntax_check["status"] if syntax_check else "Review"
+            metric_a, metric_b, metric_c = st.columns(3)
+            with metric_a:
+                show_metric("Syntax", status)
+            with metric_b:
+                show_metric("Findings", str(len(details["findings"])))
+            with metric_c:
+                show_metric("Tutor", explanation["mode"])
+            st.markdown("")
             if explanation.get("notice"):
                 st.info(explanation["notice"])
-            st.markdown(explanation["text"])
-            st.markdown("#### Suggested corrected code")
-            st.code(explanation["corrected_code"], language="python")
-            st.caption(explanation["changes"])
-            st.markdown("#### Safe check results")
-            for check in details["test_results"]:
-                icon = "✅" if check["status"] == "Passed" else "⚠️"
-                st.markdown(f"{icon} **{check['name']} · {check['status']}** — {check['detail']}")
-            for finding in details["findings"]:
-                where = f" · line {finding['line']}" if finding.get("line") else ""
-                st.markdown(f"**{finding['severity']}: {finding['title']}{where}**\n\n{finding['detail']}")
+            with st.container(border=True):
+                st.markdown("#### What may be happening")
+                st.markdown(explanation["text"])
+            with st.expander("Suggested code and changes", expanded=True):
+                st.code(explanation["corrected_code"], language="python")
+                st.caption(explanation["changes"])
+            with st.expander("Static check details", expanded=True):
+                for check in details["test_results"]:
+                    icon = "✅" if check["status"] == "Passed" else "⚠️"
+                    st.markdown(f"{icon} **{check['name']} · {check['status']}** — {check['detail']}")
+                for finding in details["findings"]:
+                    where = f" · line {finding['line']}" if finding.get("line") else ""
+                    st.markdown(f"**{finding['severity']}: {finding['title']}{where}**  \n{finding['detail']}")
             if details["tests"]:
-                st.markdown("#### Tests to try next")
-                for test in details["tests"]:
-                    st.markdown(f"- {test}")
-                st.caption("These are suggestions. Your code was not executed, so these tests have not been run.")
+                with st.expander("Test ideas to try next"):
+                    for test in details["tests"]:
+                        st.markdown(f"- {test}")
+                    st.caption("These are suggestions only; CodeSaathi did not run your program or these tests.")
             if explanation.get("mode") == "AI":
-                st.caption("AI explanations may be imperfect. Review suggestions before using them.")
+                st.caption("AI suggestions can be imperfect. Review changes before using them.")
 elif page == "History":
-    show_header("Your learning trail.", "Revisit previous snippets and the notes you received.")
     entries = list_recent(DB_PATH)
-    if not entries:
-        st.info("No analyses saved yet. Head to Analyze code to start your first one.")
-    for item in entries:
+    show_header("YOUR WORKSPACE · SAVED LOCALLY", "A record of what you’ve learned.", "Review earlier snippets and revisit the explanation whenever you need it.")
+    query = st.text_input("Search history", placeholder="Search by example title or code…")
+    visible = [item for item in entries if query.casefold() in (item["title"] + " " + item["code"]).casefold()]
+    st.caption(f"{len(visible)} saved review{'s' if len(visible) != 1 else ''}")
+    if not visible:
+        st.info("No matching reviews yet. Analyze a snippet to add it to your history.")
+    for item in visible:
         with st.expander(f"{item['title']}  ·  {item['created_at']}"):
             st.code(item["code"], language="python")
             st.markdown(item["result"].get("explanation", {}).get("text", ""))
-            st.caption("Saved locally in the SQLite database on this computer.")
+            st.caption("Saved in the local SQLite database on this computer.")
 elif page == "Examples":
-    show_header("Learn by exploring.", "Choose a small example to see a common beginner mistake and how to think about it.")
-    for name, sample in EXAMPLES.items():
-        with st.expander(name):
-            st.code(sample, language="python")
-            st.caption("Open Analyze code and choose this example from the dropdown to see its explanation.")
+    show_header("GUIDED PRACTICE · BEGINNER FRIENDLY", "Small examples. Useful lessons.", "Explore a common Python mistake, then open it in the editor and work through the fix.")
+    cards = st.columns(2, gap="medium")
+    for index, (name, sample) in enumerate(EXAMPLES.items()):
+        with cards[index % 2]:
+            with st.container(border=True):
+                st.markdown(f"#### {name}")
+                st.code(sample, language="python")
+                st.button("Open in code editor  →", key=f"open_example_{index}", on_click=navigate_to_example, args=(name,), use_container_width=True)
