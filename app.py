@@ -49,7 +49,13 @@ div.stButton > button[kind="primary"] { background:var(--green); border-color:va
 div.stButton > button[kind="primary"]:hover { background:var(--green-dark); border-color:var(--green-dark); }
 div.stButton > button { border-radius:10px; }
 div[data-baseweb="input"] > div, div[data-baseweb="select"] > div { border-radius:9px; }
-[data-testid="stExpander"] { background:white; border:1px solid var(--line); border-radius:12px; }
+[data-testid="stExpander"] { background:#ffffff !important; color:#172b2b !important; border:1px solid var(--line); border-radius:12px; }
+[data-testid="stExpander"] summary { color:#172b2b !important; }
+[data-testid="stExpander"] [data-testid="stMarkdownContainer"],
+[data-testid="stExpander"] [data-testid="stMarkdownContainer"] p,
+[data-testid="stExpander"] [data-testid="stMarkdownContainer"] li,
+[data-testid="stExpander"] [data-testid="stMarkdownContainer"] strong,
+[data-testid="stExpander"] [data-testid="stCaptionContainer"] { color:#263b39 !important; }
 @media(max-width:700px) { .hero { padding:20px; } h1 { font-size:1.75rem !important; } }
 </style>
 """, unsafe_allow_html=True)
