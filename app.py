@@ -23,8 +23,10 @@ st.markdown("""
   --mint: #eaf5f0; --line: #dfe9e5; --canvas: #f7f9f8; --white: #ffffff;
 }
 html, body, [class*="css"] { font-family: Inter, "Segoe UI", sans-serif; color: var(--ink); }
-.stApp { background: var(--canvas); }
-h1, h2, h3 { color: var(--ink); letter-spacing: -.035em; }
+.stApp { background: var(--canvas); color: var(--ink); }
+[data-testid="stMarkdownContainer"], [data-testid="stWidgetLabel"] { color: var(--ink) !important; }
+[data-testid="stCaptionContainer"] { color: var(--muted) !important; }
+h1, h2, h3, .stMarkdown h1, .stMarkdown h2, .stMarkdown h3 { color: var(--ink) !important; letter-spacing: -.035em; }
 h1 { font-size: 2.15rem !important; font-weight: 700 !important; }
 h2 { font-size: 1.4rem !important; }
 h3 { font-size: 1.05rem !important; }
@@ -36,7 +38,7 @@ h3 { font-size: 1.05rem !important; }
 .brand-sub { color:var(--muted); font-size:.75rem; margin-top:4px; }
 .hero { background:linear-gradient(118deg,#e8f4ee 0%,#f2f6e9 100%); border:1px solid #dceae2; border-radius:20px; padding:25px 30px; margin:0 0 22px; }
 .eyebrow { color:var(--green); font-size:.72rem; letter-spacing:.13em; text-transform:uppercase; font-weight:750; }
-.hero h1 { margin:.28rem 0 .3rem; }
+.hero h1 { color:var(--ink) !important; margin:.28rem 0 .3rem; }
 .hero p { color:#536a66; font-size:.98rem; margin:0; }
 .surface { border:1px solid var(--line); background:var(--white); border-radius:16px; padding:18px 20px; }
 .surface-title { color:var(--ink); font-weight:700; font-size:1rem; margin-bottom:4px; }
