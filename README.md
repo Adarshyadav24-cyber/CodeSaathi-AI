@@ -14,7 +14,7 @@ Static analysis is limited: valid syntax does not prove a program is correct, an
 - Syntax validation and static hints, with line numbers when available.
 - Simple-English demo explanations that work without an API key.
 - Optional OpenAI explanation mode using environment variables. API errors fall back to the demo tutor.
-- Corrected-code panel with narrowly scoped demonstration fixes; the app does not guess broad edits.
+- Corrected-code panel with line-specific explanations and conservative fixes for common beginner errors, including missing colons, misspelled variable names, out-of-range list indexes, and known zero divisors. Review suggested changes before using them.
 - Suggested tests and clear results for the checks that actually ran.
 - SQLite history stored locally in `codesaathi_history.db` (ignored by Git).
 - Responsive Streamlit layout and input-size validation.

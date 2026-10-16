@@ -19,7 +19,7 @@ def get_explanation(source: str, analysis: Analysis) -> dict[str, str]:
                 model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"),
                 temperature=0.2,
                 messages=[
-                    {"role": "system", "content": "You are CodeSaathi, a patient Python tutor. Explain likely cause and a suggested fix in simple English. Do not run code. Return three short labeled sections: Cause, Fix, Changes."},
+                    {"role": "system", "content": "You are CodeSaathi, a patient Python tutor. Explain in simple English. Point to the exact line number and expression when the analysis provides them. Describe what Python is trying to do, why it fails, and show a corrected example. Do not claim code was run. Do not invent a line number. Return short labeled sections: Where the error is, Why it happens, How to fix it."},
                     {"role": "user", "content": f"Analysis: {analysis.to_dict()}\nPython code:\n{source[:12000]}"},
                 ],
             )
@@ -39,7 +39,21 @@ def _demo(source: str, analysis: Analysis) -> dict[str, str]:
     corrected, changes = demo_correction(source, analysis)
     if analysis.syntax_error:
         cause, fix = explain_error(analysis.syntax_error)
+        where = f"Line {analysis.line}" if analysis.line else "Python syntax"
     else:
         issue = next((f for f in analysis.findings if f.severity in {"Error", "Check"}), None)
-        cause, fix = (issue.detail, "Check the name or value on the indicated line and compare it with its definition.") if issue else ("The code has valid Python syntax and no obvious issue was found by the basic checks.", "Run it in your own trusted local environment and compare the result with the goal of your program.")
-    return {"mode": "Demo", "text": f"**Likely cause:** {cause}\n\n**Suggested fix:** {fix}", "corrected_code": corrected, "changes": changes}
+        if issue:
+            cause = issue.detail
+            where = f"Line {issue.line}" if issue.line else "No specific line identified"
+            if issue.title == "List index is out of range":
+                fix = "Check the list length before using this index, or choose an index that exists."
+            elif issue.title == "Division by zero":
+                fix = "Check that the divisor is not zero before performing the division."
+            elif issue.title == "Possible undefined name":
+                fix = "Compare the spelling here with the variable assignment above; Python treats different spellings as different names."
+            else:
+                fix = "Check the name or value on this line and compare it with its definition."
+        else:
+            where = "No specific error found"
+            cause, fix = ("The code has valid Python syntax and no obvious issue was found by the basic checks.", "Try the suggested test cases in your own trusted Python environment and compare the results with your goal.")
+    return {"mode": "Demo", "text": f"**Where the error is:** {where}\n\n**Why it happens:** {cause}\n\n**How to fix it:** {fix}", "corrected_code": corrected, "changes": changes}

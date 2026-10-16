@@ -9,7 +9,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 from codesaathi.ai import get_explanation
-from codesaathi.analyzer import analyze_code
+from codesaathi.analyzer import EXAMPLES, analyze_code
 from codesaathi.history import list_recent, save
 
 
@@ -36,6 +36,29 @@ class AnalyzerTests(unittest.TestCase):
         result = analyze_code("name = 'Asha'\nprint(nam)")
         explanation = get_explanation("name = 'Asha'\nprint(nam)", result)
         self.assertIn("print(name)", explanation["corrected_code"])
+        self.assertIn("Line 2", explanation["text"])
+
+    def test_wrong_index_has_line_and_guarded_correction(self):
+        source = EXAMPLES["Wrong list index"]
+        result = analyze_code(source)
+        explanation = get_explanation(source, result)
+        self.assertTrue(any(f.title == "List index is out of range" and f.line == 2 for f in result.findings))
+        self.assertIn("if len(colors) > 2", explanation["corrected_code"])
+        self.assertIn("Line 2", explanation["text"])
+
+    def test_zero_divisor_has_line_and_guarded_correction(self):
+        source = EXAMPLES["Divide by zero"]
+        result = analyze_code(source)
+        explanation = get_explanation(source, result)
+        self.assertTrue(any(f.title == "Division by zero" and f.line == 3 for f in result.findings))
+        self.assertIn("if count == 0:", explanation["corrected_code"])
+        self.assertIn("assigned the value 0 on line 2", " ".join(f.detail for f in result.findings))
+
+    def test_missing_colon_gets_corrected_code(self):
+        source = EXAMPLES["Missing colon"]
+        explanation = get_explanation(source, analyze_code(source))
+        self.assertIn("range(3):", explanation["corrected_code"])
+        self.assertIn("Line 1", explanation["text"])
 
     def test_empty_and_size_limit_are_not_executed(self):
         self.assertEqual(analyze_code("x = 1\n" * 4000).status, "invalid")
